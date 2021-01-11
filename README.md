@@ -288,3 +288,119 @@ export class CourseEntityService extends EntityCollectionServiceBase<Course> {
 you also need to provide the service in the lazy loaded module.
 
 
+Create a new service for your entity ex: course-entity-service
+```ts
+import { Injectable } from "@angular/core";
+import { EntityCollectionServiceBase, EntityCollectionServiceElementsFactory } from "@ngrx/data";
+import { Course } from "../model/course";
+
+@Injectable()
+export class CourseEntityService extends EntityCollectionServiceBase<Course> {
+  constructor(
+    serviceElementFactory: EntityCollectionServiceElementsFactory
+  ) {
+    super('Course', serviceElementFactory)
+  }
+}
+```
+
+Create a new service to handle your entity with custom stuff ex: course-data-service
+```ts
+import { HttpClient } from "@angular/common/http";
+import { Injectable } from "@angular/core";
+import { DefaultDataService, HttpUrlGenerator } from "@ngrx/data";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
+import { Course } from "../model/course";
+
+@Injectable()
+export class CoursesDataService extends DefaultDataService<Course> {
+  constructor(http: HttpClient, httpUrlGenerator: HttpUrlGenerator) {
+    super('Course', http, httpUrlGenerator);
+  }
+
+  getAll(): Observable<Course[]> {
+    return this.http.get('/api/courses/')
+      .pipe(map(res => res['payload']))
+  }
+}
+```
+
+Register your metadata and custom service in the lazyloaded module
+```ts
+const entityMetaData: EntityMetadataMap = {
+  Course: {
+    sortComparer: compareCourses
+  },
+};
+
+export class CoursesModule {
+  constructor(
+    private entityDefinitionService: EntityDefinitionService,
+    private entityDataService: EntityDataService,
+    private coursesDataService: CoursesDataService
+  ) {
+    this.entityDefinitionService.registerMetadataMap(entityMetaData);
+
+    this.entityDataService.registerService('Course', this.coursesDataService)
+  }
+}
+```
+
+Using a resolver to fetch data from server or cache 
+
+```ts
+import { Injectable } from "@angular/core";
+import {
+  ActivatedRouteSnapshot,
+  Resolve,
+  RouterStateSnapshot,
+} from "@angular/router";
+import { Observable } from "rxjs";
+import { filter, first, map, tap } from "rxjs/operators";
+import { CourseEntityService } from "./services/course-entity.service";
+
+@Injectable()
+export class CoursesResolver implements Resolve<boolean> {
+  loading = false;
+
+  constructor(private coursesService: CourseEntityService) {}
+
+  resolve(
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ): Observable<boolean> {
+    return this.coursesService.loaded$.pipe(
+      tap((loaded) => {
+        if (!loaded) {
+          this.coursesService.getAll();
+        }
+      }),
+      filter((loaded) => !!loaded),
+      first()
+    );
+  }
+}
+```
+
+Fetching data from your container component
+
+```ts
+constructor(
+  private coursesService: CourseEntityService
+) {}
+
+ngOnInit() {
+  this.beginnerCourses$ = this.coursesService.entities$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category === "BEGINNER")
+      )
+    );
+
+    this.advancedCourses$ = this.coursesService.entities$.pipe(
+      map((courses) =>
+        courses.filter((course) => course.category === "ADVANCED")
+      )
+    );
+}
+```
