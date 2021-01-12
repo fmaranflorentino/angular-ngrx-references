@@ -71,5 +71,6 @@ export class EditCourseDialogComponent {
     }
 
     this.coursesService.add(course).subscribe(() => this.dialogRef.close());
+
   }
 }
