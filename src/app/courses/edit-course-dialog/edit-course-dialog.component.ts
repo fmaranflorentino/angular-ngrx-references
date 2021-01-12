@@ -5,6 +5,7 @@ import { FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { Observable } from "rxjs";
 import { CoursesHttpService } from "../services/courses-http.service";
 import { CourseEntityService } from "../services/course-entity.service";
+import { tap, filter, first } from "rxjs/operators";
 
 @Component({
   selector: "course-dialog",
@@ -65,7 +66,10 @@ export class EditCourseDialogComponent {
       this.coursesService.update(course);
 
       this.dialogRef.close();
+
+      return;
     }
 
+    this.coursesService.add(course).subscribe(() => this.dialogRef.close());
   }
 }
