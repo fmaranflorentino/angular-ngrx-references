@@ -238,13 +238,13 @@ export function logger(reducer: ActionReducer<any>): ActionReducer<any> {
     console.log(`action`, action);
 
     return reducer(state, action);
-  }
+  };
 }
 
-
-export const metaReducers: MetaReducer<AppState>[] = !environment.production ? [logger] : [];
+export const metaReducers: MetaReducer<AppState>[] = !environment.production
+  ? [logger]
+  : [];
 ```
-
 
 ## Entity Data
 
@@ -254,12 +254,12 @@ In your app.module add the following import
   EntityDataModule.forRoot({}),
 ```
 
-Now in your lazy loaded module you need to add configuration 
+Now in your lazy loaded module you need to add configuration
 
 ```ts
 const entityMetaData: EntityMetadataMap = {
   Course: {
-    
+
   }
 };
 
@@ -272,39 +272,42 @@ In order to access and handle the entities in the store you need to create servi
 
 ```ts
 import { Injectable } from "@angular/core";
-import { EntityCollectionServiceBase, EntityCollectionServiceElementsFactory } from "@ngrx/data";
+import {
+  EntityCollectionServiceBase,
+  EntityCollectionServiceElementsFactory,
+} from "@ngrx/data";
 import { Course } from "../model/course";
 
 @Injectable()
 export class CourseEntityService extends EntityCollectionServiceBase<Course> {
-  constructor(
-    serviceElementFactory: EntityCollectionServiceElementsFactory
-  ) {
-    super('Course', serviceElementFactory)
+  constructor(serviceElementFactory: EntityCollectionServiceElementsFactory) {
+    super("Course", serviceElementFactory);
   }
 }
 ```
 
 you also need to provide the service in the lazy loaded module.
 
-
 Create a new service for your entity ex: course-entity-service
+
 ```ts
 import { Injectable } from "@angular/core";
-import { EntityCollectionServiceBase, EntityCollectionServiceElementsFactory } from "@ngrx/data";
+import {
+  EntityCollectionServiceBase,
+  EntityCollectionServiceElementsFactory,
+} from "@ngrx/data";
 import { Course } from "../model/course";
 
 @Injectable()
 export class CourseEntityService extends EntityCollectionServiceBase<Course> {
-  constructor(
-    serviceElementFactory: EntityCollectionServiceElementsFactory
-  ) {
-    super('Course', serviceElementFactory)
+  constructor(serviceElementFactory: EntityCollectionServiceElementsFactory) {
+    super("Course", serviceElementFactory);
   }
 }
 ```
 
 Create a new service to handle your entity with custom stuff ex: course-data-service
+
 ```ts
 import { HttpClient } from "@angular/common/http";
 import { Injectable } from "@angular/core";
@@ -316,21 +319,21 @@ import { Course } from "../model/course";
 @Injectable()
 export class CoursesDataService extends DefaultDataService<Course> {
   constructor(http: HttpClient, httpUrlGenerator: HttpUrlGenerator) {
-    super('Course', http, httpUrlGenerator);
+    super("Course", http, httpUrlGenerator);
   }
 
   getAll(): Observable<Course[]> {
-    return this.http.get('/api/courses/')
-      .pipe(map(res => res['payload']))
+    return this.http.get("/api/courses/").pipe(map((res) => res["payload"]));
   }
 }
 ```
 
 Register your metadata and custom service in the lazyloaded module
+
 ```ts
 const entityMetaData: EntityMetadataMap = {
   Course: {
-    sortComparer: compareCourses
+    sortComparer: compareCourses,
   },
 };
 
@@ -342,12 +345,12 @@ export class CoursesModule {
   ) {
     this.entityDefinitionService.registerMetadataMap(entityMetaData);
 
-    this.entityDataService.registerService('Course', this.coursesDataService)
+    this.entityDataService.registerService("Course", this.coursesDataService);
   }
 }
 ```
 
-Using a resolver to fetch data from server or cache 
+Using a resolver to fetch data from server or cache
 
 ```ts
 import { Injectable } from "@angular/core";
