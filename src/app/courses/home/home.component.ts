@@ -1,9 +1,7 @@
-import { Component, OnInit } from "@angular/core";
+import { ChangeDetectionStrategy, Component, OnInit } from "@angular/core";
 import { MatDialog } from "@angular/material/dialog";
-import { select } from "@ngrx/store";
 import { Observable } from "rxjs";
 import { map } from "rxjs/operators";
-import { selectAdvancedCourses, selectPromoTotal } from "../courses.selectors";
 import { EditCourseDialogComponent } from "../edit-course-dialog/edit-course-dialog.component";
 import { Course } from "../model/course";
 import { CourseEntityService } from "../services/course-entity.service";
@@ -13,6 +11,7 @@ import { defaultDialogConfig } from "../shared/default-dialog-config";
   selector: "home",
   templateUrl: "./home.component.html",
   styleUrls: ["./home.component.css"],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit {
   promoTotal$: Observable<any>;
